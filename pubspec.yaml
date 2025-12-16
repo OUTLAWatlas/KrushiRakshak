@@ -1,0 +1,45 @@
+name: kisaan_raksha
+description: "A new Flutter project for Offline Precision Agronomy."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 1. The Eyes (Camera)
+  camera: ^0.10.5
+  
+  # 2. The Brain (AI)
+  # Using the modern TFLite package as per your refactor
+  tflite_flutter: ^0.10.4
+  
+  # 3. The Memory (Offline Database)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.1
+  
+  # 4. The OCR (Seed Packet Scanner)
+  google_mlkit_text_recognition: ^0.11.0
+  
+  # 5. Icons & UI Extras
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+# CRITICAL: This section tells Flutter to bundle your AI models and images inside the App
+flutter:
+  uses-material-design: true
+
+  assets:
+    # The AI Model & Labels
+    - assets/models/
+    
+    # Images (If you added any brand bottle images)
+    # - assets/images/
