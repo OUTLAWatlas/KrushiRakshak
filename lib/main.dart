@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'core/services/database_service.dart';
+import 'core/services/localization_service.dart';
 import 'modules/dashboard/screens/dashboard_screen.dart';
 import 'modules/onboarding/screens/seed_scan_screen.dart';
 
@@ -12,7 +14,15 @@ Future<void> main() async {
   final profile = db.getUserProfile();
   final initialRoute = profile == null ? '/onboarding' : '/dashboard';
 
-  runApp(KisaanRakshaApp(initialRoute: initialRoute));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LocalizationService()),
+        Provider<DatabaseService>.value(value: db),
+      ],
+      child: KisaanRakshaApp(initialRoute: initialRoute),
+    ),
+  );
 }
 
 class KisaanRakshaApp extends StatelessWidget {

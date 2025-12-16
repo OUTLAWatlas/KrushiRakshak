@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/services/database_service.dart';
+import '../../../core/services/localization_service.dart';
+import '../../../core/services/weather_service.dart';
+import '../../calculator/screens/dosage_calculator_screen.dart';
 import '../../scanner/screens/pest_scanner_screen.dart';
 import '../widgets/timeline_card.dart';
 
@@ -54,17 +58,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _openDosageCalc() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const DosageCalculatorScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocalizationService>();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: const Text('PikVedh'),
+        title: Text(loc.translate('app_title')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.translate),
+            onPressed: () {
+              loc.toggleLanguage();
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openScanner,
         icon: const Icon(Icons.qr_code_scanner),
-        label: const Text('Scan Now'),
+        label: Text(loc.translate('scan_pest')),
         backgroundColor: Colors.green,
       ),
       body: _loading
@@ -77,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildWeatherCard(),
                   const SizedBox(height: 16),
                   Text(
-                    'Crop Status',
+                    loc.translate('timeline'),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
@@ -86,26 +105,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     sowingDate: _sowingDate,
                     totalDuration: _duration,
                     variety: _variety,
+                    stageVegetativeLabel: loc.translate('stage_vegetative'),
+                    stageFloweringLabel: loc.translate('stage_flowering'),
+                    stageHarvestLabel: 'Harvest',
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Quick Actions',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text('Quick Actions', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: _quickActionCard('Scan Pest', Icons.bug_report, _openScanner)),
+                      Expanded(child: _quickActionCard(loc.translate('scan_pest'), Icons.bug_report, _openScanner)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _quickActionCard(
-                          'Dosage Calc',
+                          loc.translate('dosage_calc'),
                           Icons.water_drop,
-                          () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Dosage calculator coming soon')),
-                            );
-                          },
+                          _openDosageCalc,
                         ),
                       ),
                     ],
@@ -117,31 +132,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildWeatherCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            'Yavatmal',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+    final loc = context.read<LocalizationService>();
+    return FutureBuilder<Map<String, dynamic>>(
+      future: WeatherService().getCurrentWeather(),
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        final temp = data?['temp']?.toString() ?? '...';
+        final humidity = data?['humidity']?.toString() ?? '...';
+        final location = data?['location']?.toString() ?? loc.translate('weather');
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-          SizedBox(height: 4),
-          Text(
-            '32°C | High Humidity',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                location,
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$temp | $humidity',
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -10,23 +10,27 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # 1. The Eyes (Camera)
-  camera: ^0.10.5
-  
-  # 2. The Brain (AI)
-  # Using the modern TFLite package as per your refactor
-  tflite_flutter: ^0.10.4
-  
-  # 3. The Memory (Offline Database)
+  # Core Features (Pinned to Stable)
+  camera: 0.10.5
+  tflite_flutter: ^0.11.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  path_provider: ^2.1.1
-  
-  # 4. The OCR (Seed Packet Scanner)
-  google_mlkit_text_recognition: ^0.11.0
-  
-  # 5. Icons & UI Extras
+  path_provider: ^2.1.4
+  google_mlkit_text_recognition: ^0.13.0
+  image: ^4.1.3
+  geolocator: ^10.1.0
+  http: ^1.2.0
+  provider: ^6.1.1
   cupertino_icons: ^1.0.2
+
+# Force stable Android implementations
+dependency_overrides:
+  # Camera: stable for SDK 34
+  camera_android: 0.10.9+12
+  # Lifecycle: modern V2 embedding
+  flutter_plugin_android_lifecycle: 2.0.23
+  # PathProvider: compileSdk 34, no Registrar
+  path_provider_android: 2.2.12
 
 dev_dependencies:
   flutter_test:

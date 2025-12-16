@@ -7,12 +7,18 @@ class CropTimelineCard extends StatelessWidget {
     required this.sowingDate,
     required this.totalDuration,
     required this.variety,
+    this.stageVegetativeLabel = 'Vegetative',
+    this.stageFloweringLabel = 'Flowering',
+    this.stageHarvestLabel = 'Harvest',
   });
 
   final String cropName;
   final DateTime sowingDate;
   final int totalDuration;
   final String variety;
+  final String stageVegetativeLabel;
+  final String stageFloweringLabel;
+  final String stageHarvestLabel;
 
   int _daysElapsed() {
     final now = DateTime.now();
@@ -32,6 +38,17 @@ class CropTimelineCard extends StatelessWidget {
     if (daysElapsed < 40) return 'Vegetative';
     if (daysElapsed < 90) return 'Flowering';
     return 'Harvest';
+  }
+
+  String _stageLabel(String stage) {
+    switch (stage) {
+      case 'Vegetative':
+        return stageVegetativeLabel;
+      case 'Flowering':
+        return stageFloweringLabel;
+      default:
+        return stageHarvestLabel;
+    }
   }
 
   Color _stageColor(String stage, BuildContext context) {
@@ -60,6 +77,7 @@ class CropTimelineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final elapsed = _daysElapsed();
     final stage = _currentStage(elapsed);
+    final stageLabel = _stageLabel(stage);
     final progressValue = _progress(elapsed);
 
     return Card(
@@ -96,7 +114,7 @@ class CropTimelineCard extends StatelessWidget {
                       _stageColor(stage, context).withOpacity(stage == 'Harvest' ? 0.15 : 0.2),
                   side: BorderSide.none,
                   label: Text(
-                    stage,
+                    stageLabel,
                     style: TextStyle(
                       color: stage == 'Harvest'
                           ? Theme.of(context).colorScheme.outline
