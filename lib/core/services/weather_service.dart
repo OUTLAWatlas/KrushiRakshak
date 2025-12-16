@@ -1,66 +1,57 @@
-import 'dart:convert';
-
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 
 class WeatherService {
-  static const _apiKey = 'YOUR_OPENWEATHERMAP_KEY';
-
+  // Get Real Location & Weather (temp/humidity simulated for now)
   Future<Map<String, dynamic>> getCurrentWeather() async {
     try {
-      final hasPermission = await _ensureLocationPermission();
-      if (!hasPermission) throw Exception('Location permission denied');
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return _getMockData('Location Denied');
+      }
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      final url = Uri.parse(
-        'https://api.openweathermap.org/data/2.5/weather?lat=${position.latitude}&lon=${position.longitude}&appid=$_apiKey&units=metric',
-      );
-
-      final resp = await http.get(url).timeout(const Duration(seconds: 8));
-      if (resp.statusCode == 200) {
-        final data = jsonDecode(resp.body) as Map<String, dynamic>;
-        final main = data['main'] as Map<String, dynamic>?;
-        final name = data['name']?.toString() ?? 'Unknown';
-        final temp = main?['temp']?.toString();
-        final humidity = main?['humidity']?.toString();
-        return {
-          'temp': temp != null ? '${temp}°C' : 'N/A',
-          'humidity': humidity != null ? '$humidity%' : 'N/A',
-          'location': name,
-        };
+      String city = 'Unknown Field';
+      try {
+        final placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          city = placemarks.first.locality ?? 'Village';
+        }
+      } catch (_) {
+        // ignore geocoding errors and fallback to default
       }
 
-      throw Exception('Weather API error ${resp.statusCode}');
-    } catch (_) {
       return {
-        'temp': '32°C',
-        'humidity': 'High',
-        'location': 'Yavatmal (Offline Mode)',
+        'location': city,
+        'temp': '31°C', // simulated for now
+        'humidity': '65%',
+        'condition': 'Sunny',
+        'lat': position.latitude,
+        'long': position.longitude,
       };
+    } catch (_) {
+      return _getMockData('GPS Error');
     }
   }
 
-  Future<bool> _ensureLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return false;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return false;
-    }
-
-    return true;
+  Map<String, dynamic> _getMockData(String errorLocation) {
+    return {
+      'location': errorLocation,
+      'temp': '--',
+      'humidity': '--',
+      'condition': 'Unknown',
+      'lat': 19.0760,
+      'long': 72.8777,
+    };
   }
 }

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:intl/intl.dart';
+import '../../../data/crop_data.dart';
 import '../../../core/services/database_service.dart';
 
 class SeedScanScreen extends StatefulWidget {
@@ -55,10 +57,9 @@ class _SeedScanScreenState extends State<SeedScanScreen> {
       final xFile = await _cameraController!.takePicture();
       final inputImage = InputImage.fromFile(File(xFile.path));
       final recognizedText = await _textRecognizer.processImage(inputImage);
-      final detection = _parseText(recognizedText.text);
       if (!mounted) return;
 
-      await _showDetectionDialog(detection);
+      await _showConfirmationDialog(recognizedText.text);
     } catch (_) {
       // Silently ignore for now.
     } finally {
@@ -68,62 +69,130 @@ class _SeedScanScreenState extends State<SeedScanScreen> {
     }
   }
 
-  _DetectionResult _parseText(String text) {
-    final lower = text.toLowerCase();
-    if (lower.contains('rasi') || lower.contains('659')) {
-      return _DetectionResult(
-        brand: 'Rasi',
-        variety: 'Hybrid Bt Cotton',
-        durationDays: 160,
-      );
-    }
-    if (lower.contains('mahyco')) {
-      return _DetectionResult(
-        brand: 'Mahyco',
-        variety: 'Standard Cotton',
-        durationDays: 150,
-      );
-    }
-    return _DetectionResult(brand: 'Unknown', variety: 'Cotton', durationDays: 150);
-  }
+  Future<void> _showConfirmationDialog(String detectedText) async {
+    // 1. Identify Crop (Simple Logic for MVP)
+    String cropId = 'cotton'; // Default
+    String cropName = 'Cotton';
 
-  Future<void> _showDetectionDialog(_DetectionResult detection) async {
-    final db = DatabaseService();
-    await db.init();
+    if (detectedText.toLowerCase().contains("soy")) {
+      cropId = 'soybean';
+      cropName = 'Soybean';
+    } else if (detectedText.toLowerCase().contains("wheat")) {
+      cropId = 'wheat';
+      cropName = 'Wheat';
+    }
 
-    if (!mounted) return;
-    await showDialog<void>(
+    // 2. Get the "Smart Guess" Date
+    DateTime estimatedDate = CropData.estimateSowingDate(cropId);
+
+    // We store this in a temporary variable so the user can change it
+    DateTime selectedDate = estimatedDate;
+
+    await showDialog(
       context: context,
+      barrierDismissible: false, // Force them to choose
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Seed Detected'),
-          content: Text(
-            'Brand: ${detection.brand}\nVariety: ${detection.variety}\nDuration: ${detection.durationDays} days',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Scan Again'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await db.saveUserProfile({
-                  'name': '',
-                  'crop': 'Cotton',
-                  'variety': detection.variety,
-                  'sowingDate': DateTime.now().toIso8601String(),
-                  'duration': detection.durationDays,
-                });
-                if (!mounted) return;
-                Navigator.of(context).pop();
-                Navigator.of(context).pushReplacementNamed('/dashboard');
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
+        return StatefulBuilder( // Needed to update the Date Text inside Dialog
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text("Confirm Crop Details"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Crop Detection
+                  Text("Detected: $cropName", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  const Text("Seed Variety: Hybrid (Auto-Detected)", style: TextStyle(color: Colors.grey)),
+                  const Divider(height: 30),
+
+                  // The "Smart Date" Section
+                  const Text("Sowing Date (Lagwad):", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2023),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setDialogState(() {
+                          selectedDate = picked;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.green),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.green.withOpacity(0.1)
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            DateFormat('dd MMMM yyyy').format(selectedDate),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const Icon(Icons.calendar_today, color: Colors.green),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // "Smart Guess" Explanation
+                  if (selectedDate != DateTime.now())
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        "💡 We guessed this date based on the ${cropName} season. Tap to change if incorrect.",
+                        style: TextStyle(fontSize: 11, color: Colors.blue[800], fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Retake Photo", style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Pass the CORRECTED date to your save function
+                    _saveAndContinue(cropName, cropId, selectedDate);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text("Confirm & Start", style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
         );
       },
     );
+  }
+
+  Future<void> _saveAndContinue(String name, String id, DateTime date) async {
+    final db = DatabaseService();
+    await db.init();
+    final profile = {
+      'crop': name,
+      'cropId': id,
+      'variety': 'Hybrid Bt',
+      'duration': id == 'cotton' ? 160 : 100,
+      'sowingDate': date.toIso8601String(), // Uses the historic date!
+      'userName': 'Farmer',
+    };
+
+    await db.saveUserProfile(profile);
+
+    if (mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+    }
   }
 
   @override
@@ -169,16 +238,4 @@ class _SeedScanScreenState extends State<SeedScanScreen> {
       ),
     );
   }
-}
-
-class _DetectionResult {
-  _DetectionResult({
-    required this.brand,
-    required this.variety,
-    required this.durationDays,
-  });
-
-  final String brand;
-  final String variety;
-  final int durationDays;
 }

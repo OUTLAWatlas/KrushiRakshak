@@ -39,9 +39,10 @@ class DatabaseService {
     }
   }
 
-  Future<void> saveUserProfile(Map<String, dynamic> data) async {
+  Future<void> saveUserProfile(Map<String, dynamic> userProfile) async {
     try {
-      await _userProfileBox?.put('profile', data);
+      await _userProfileBox?.put('current_user', userProfile);
+      log('User Saved: $userProfile');
     } catch (error, stackTrace) {
       log(
         'Failed to save user profile',
@@ -53,7 +54,9 @@ class DatabaseService {
 
   Map<String, dynamic>? getUserProfile() {
     try {
-      return _userProfileBox?.get('profile');
+      final data = _userProfileBox?.get('current_user');
+      if (data == null) return null;
+      return Map<String, dynamic>.from(data);
     } catch (error, stackTrace) {
       log(
         'Failed to get user profile',

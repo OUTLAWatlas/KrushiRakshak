@@ -3,7 +3,10 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import '../../../core/services/ledger_service.dart';
+import '../../../core/services/mock_auth.dart';
 
 class PestScannerScreen extends StatefulWidget {
   const PestScannerScreen({super.key});
@@ -21,6 +24,11 @@ class _PestScannerScreenState extends State<PestScannerScreen>
   late final AnimationController _scanLineController;
   Interpreter? _interpreter;
   List<String> _labels = const [];
+  final Map<String, String> _solutions = const {
+    'Aphids': 'Spray neem oil (3ml/l) in the evening and monitor after 48 hours.',
+    'Pink Bollworm': 'Use pheromone traps and apply recommended bollworm larvicide.',
+    'Thrips': 'Light spray of imidacloprid as per label; avoid during peak sun.',
+  };
 
   @override
   void initState() {
@@ -62,7 +70,6 @@ class _PestScannerScreenState extends State<PestScannerScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      await controller.startImageStream(_onCameraImage);
       setState(() {
         _cameraController = controller;
         _isCameraInitialized = true;
@@ -75,6 +82,13 @@ class _PestScannerScreenState extends State<PestScannerScreen>
   Future<void> _onCameraImage(CameraImage image) async {
     if (_isScanning) return;
     await runModelOnFrame(image);
+  }
+
+  void _simulateDetection() {
+    setState(() {
+      _result = {'label': 'Aphids', 'confidence': 0.85};
+    });
+    _showResultSheet();
   }
 
   Future<void> runModelOnFrame(CameraImage image) async {
@@ -218,6 +232,8 @@ class _PestScannerScreenState extends State<PestScannerScreen>
       builder: (_) {
         final label = _result?['label']?.toString() ?? 'Unknown';
         final conf = ((_result?['confidence'] as double?) ?? 0) * 100;
+        final solution = _solutions[label] ?? 'Use recommended IPM spray and monitor in 48 hours.';
+        final ledger = context.read<LedgerService>();
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -230,21 +246,39 @@ class _PestScannerScreenState extends State<PestScannerScreen>
               ),
               const SizedBox(height: 8),
               Text('Confidence: ${conf.toStringAsFixed(1)}%'),
+              const SizedBox(height: 12),
+              Text('Solution', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 4),
+              Text(solution),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    _saveToLedger(ledger, label, conf / 100);
                     Navigator.of(context).pop();
-                    // Navigate to cure/solution screen.
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Saved to ledger')),
+                    );
                   },
-                  child: const Text('View Cure'),
+                  child: const Text('Save to Ledger'),
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  void _saveToLedger(LedgerService ledger, String pest, double confidence) {
+    ledger.addEntry(
+      ScanEntry(
+        pestName: pest,
+        confidence: confidence,
+        date: DateTime.now(),
+        userId: currentUser['id'] as String,
+      ),
     );
   }
 
@@ -261,6 +295,14 @@ class _PestScannerScreenState extends State<PestScannerScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pest Scanner'),
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(child: Icon(Icons.person)),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+          ),
+        ],
       ),
       body: _isCameraInitialized
           ? Stack(
@@ -280,18 +322,14 @@ class _PestScannerScreenState extends State<PestScannerScreen>
                   right: 16,
                   bottom: 24,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      if (_cameraController == null) return;
-                      if (_cameraController!.value.isStreamingImages) return;
-                      await _cameraController!.startImageStream(_onCameraImage);
-                    },
+                    onPressed: _simulateDetection,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Scan Now'),
+                    child: const Text('Simulate Pest Detection'),
                   ),
                 ),
               ],
