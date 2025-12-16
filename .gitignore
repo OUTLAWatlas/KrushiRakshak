@@ -1,0 +1,65 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+coverage/
+
+# IntelliJ/Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Android
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/local.properties
+**/android/key.properties
+
+# iOS/macOS
+**/ios/Flutter/
+**/ios/.symlinks/
+**/ios/Pods/
+**/ios/Runner.xcworkspace/
+**/ios/DerivedData/
+**/macos/Flutter/
+**/macos/Pods/
+**/macos/Runner.xcworkspace/
+
+# Windows
+**/windows/Flutter/
+
+# Linux
+**/linux/flutter/
+
+# Web
+**/web/.dart_tool/
+
+# Generated plugin/pack files
+.flutter-plugins
+.flutter-plugins-dependencies
+.meloseeds
+
+# Credentials / signing
+*.keystore
+*.jks
+*.p12
+*.pem
+*.cer
+*.mobileprovision
+*.provisionprofile
+
+# Logs
+*.log
+
+# Misc
+*.lock
+.DS_Store
+Thumbs.db
