@@ -46,6 +46,9 @@ dependency_overrides:
   flutter_plugin_android_lifecycle: 2.0.23
   # PathProvider: compileSdk 34, no Registrar
   path_provider_android: 2.2.12
+  # Patched tflite plugin to replace deprecated compile with implementation
+  tflite: 
+    path: patches/tflite
 
 dev_dependencies:
   flutter_test:

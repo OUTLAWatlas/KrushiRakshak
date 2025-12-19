@@ -1,0 +1,27 @@
+group 'sq.flutter.tflite'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace "sq.flutter.tflite"
+    compileSdkVersion 34
+
+    defaultConfig {
+        minSdkVersion 21
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+}
+
+dependencies {
+    implementation 'org.tensorflow:tensorflow-lite:+'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:+'
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
