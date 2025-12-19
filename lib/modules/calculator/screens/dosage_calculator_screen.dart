@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/services/localization_service.dart';
 
 class DosageCalculatorScreen extends StatefulWidget {
   const DosageCalculatorScreen({super.key, this.initialPest});
@@ -58,6 +60,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocalizationService>();
     final filteredMedicines = _isExportMode
         ? _medicines.where((m) => m['is_banned_for_export'] == false).toList()
         : _medicines;
@@ -71,7 +74,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dosage Calculator'),
+        title: Text(loc.translate('dosage_calc')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -87,7 +90,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      'Pest: ${widget.initialPest}',
+                      '${loc.translate('pest_label')}: ${widget.initialPest}',
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   ),
@@ -95,14 +98,15 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   controller: _tankSizeController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Tank Size (Liters)',
+                    // labelText replaced below with translated value
+                        
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile.adaptive(
-                  title: const Text('Export Mode'),
+                  title: Text(loc.translate('export_mode')),
                   activeColor: Colors.green,
                   value: _isExportMode,
                   onChanged: (val) {
@@ -113,9 +117,9 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ),
                 const SizedBox(height: 8),
                 InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Select Medicine',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: loc.translate('select_medicine'),
+                    border: const OutlineInputBorder(),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<Map<String, dynamic>>(
@@ -125,7 +129,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           .map(
                             (med) => DropdownMenuItem<Map<String, dynamic>>(
                               value: med,
-                              child: Text(med['name'] as String),
+                                child: Text(med['name'] as String),
                             ),
                           )
                           .toList(),
@@ -154,7 +158,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '${_selectedMedicine['name']} is banned for export.',
+                            loc.translate('banned_for_export').replaceAll('{name}', _selectedMedicine['name'] as String),
                             style: TextStyle(color: Colors.red.shade800),
                           ),
                         ),
@@ -165,13 +169,13 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 Center(
                   child: Column(
                     children: [
-                      const Text(
-                        'Required Dosage',
+                      Text(
+                        loc.translate('required_dosage'),
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${caps.toStringAsFixed(1)} Caps',
+                        '${caps.toStringAsFixed(1)} ${loc.translate('caps')}',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               color: Colors.green.shade700,
                               fontWeight: FontWeight.bold,

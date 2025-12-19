@@ -75,9 +75,9 @@ class _PestMapScreenState extends State<PestMapScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Pest Radar', style: TextStyle(fontSize: 18)),
+            Text(lang.translate('pest_radar'), style: const TextStyle(fontSize: 18)),
             Text(
-              'Showing risks for ${widget.userCrop}',
+              lang.translate('showing_risks_for').replaceAll('{crop}', widget.userCrop),
               style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ],
@@ -115,10 +115,10 @@ class _PestMapScreenState extends State<PestMapScreen> {
                 point: LatLng(widget.userLat, widget.userLong),
                 width: 80,
                 height: 80,
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
-                    Text('You', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                    Text(lang.translate('you'), style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),

@@ -1,9 +1,9 @@
-  import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/localization_service.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import '../../../core/services/ledger_service.dart';
 import '../../../core/services/mock_auth.dart';
@@ -230,9 +230,12 @@ class _PestScannerScreenState extends State<PestScannerScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) {
-        final label = _result?['label']?.toString() ?? 'Unknown';
+        final loc = Provider.of<LocalizationService>(context);
+        final labelRaw = _result?['label']?.toString() ?? 'unknown';
+        final label = loc.translate(labelRaw);
         final conf = ((_result?['confidence'] as double?) ?? 0) * 100;
-        final solution = _solutions[label] ?? 'Use recommended IPM spray and monitor in 48 hours.';
+        final solution = _solutions[_result?['label']?.toString() ?? ''] ??
+            loc.translate('solution') + ': ' + loc.translate('unknown');
         final ledger = context.read<LedgerService>();
         return Padding(
           padding: const EdgeInsets.all(16),
@@ -245,9 +248,9 @@ class _PestScannerScreenState extends State<PestScannerScreen>
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
-              Text('Confidence: ${conf.toStringAsFixed(1)}%'),
+              Text('${loc.translate('confidence')}: ${conf.toStringAsFixed(1)}%'),
               const SizedBox(height: 12),
-              Text('Solution', style: Theme.of(context).textTheme.titleMedium),
+              Text(loc.translate('solution'), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
               Text(solution),
               const SizedBox(height: 16),
@@ -255,13 +258,13 @@ class _PestScannerScreenState extends State<PestScannerScreen>
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    _saveToLedger(ledger, label, conf / 100);
+                    _saveToLedger(ledger, labelRaw, conf / 100);
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Saved to ledger')),
+                      SnackBar(content: Text(loc.translate('saved_to_ledger'))),
                     );
                   },
-                  child: const Text('Save to Ledger'),
+                  child: Text(loc.translate('save_to_ledger')),
                 ),
               ),
             ],
@@ -292,9 +295,11 @@ class _PestScannerScreenState extends State<PestScannerScreen>
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocalizationService>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pest Scanner'),
+        title: Text(loc.translate('pest_scanner_title')),
         actions: [
           IconButton(
             icon: const CircleAvatar(child: Icon(Icons.person)),
@@ -329,7 +334,7 @@ class _PestScannerScreenState extends State<PestScannerScreen>
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Simulate Pest Detection'),
+                    child: Text(loc.translate('simulate_detection')),
                   ),
                 ),
               ],

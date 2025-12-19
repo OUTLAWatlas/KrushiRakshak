@@ -1,10 +1,22 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform, kIsWeb;
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class OCRService {
-  final TextRecognizer _recognizer = TextRecognizer();
+  final TextRecognizer? _recognizer;
 
-  Future<String> scanSeedPacket(InputImage image) async {
-    final result = await _recognizer.processImage(image);
+  OCRService() : _recognizer = (!_isSupportedPlatform()) ? null : TextRecognizer();
+
+  static bool _isSupportedPlatform() {
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
+  }
+
+  Future<String> scanSeedPacket(File imageFile) async {
+    if (_recognizer == null) return 'OCR Unsupported';
+    final inputImage = InputImage.fromFile(imageFile);
+    final result = await _recognizer!.processImage(inputImage);
     final text = result.text.toLowerCase();
     if (text.contains('rasi')) return 'Rasi';
     if (text.contains('mahyco')) return 'Mahyco';
@@ -13,6 +25,10 @@ class OCRService {
   }
 
   void dispose() {
-    _recognizer.close();
+    try {
+      _recognizer?.close();
+    } catch (_) {
+      // Ignore platform errors when plugin not implemented on this platform
+    }
   }
 }

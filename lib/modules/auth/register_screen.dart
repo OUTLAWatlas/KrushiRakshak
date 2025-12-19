@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/services/localization_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -22,8 +24,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocalizationService>();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      appBar: AppBar(title: Text(loc.translate('register'))),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -31,18 +35,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: loc.translate('name')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
+              decoration: InputDecoration(labelText: loc.translate('phone_number')),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _otpController,
-              decoration: const InputDecoration(labelText: 'OTP'),
+              decoration: InputDecoration(labelText: loc.translate('otp')),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 24),
@@ -52,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/onboarding');
                 },
-                child: const Text('Send OTP'),
+                child: Text(loc.translate('send_otp')),
               ),
             ),
           ],

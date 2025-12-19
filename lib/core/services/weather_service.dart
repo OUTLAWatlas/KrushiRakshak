@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -14,9 +16,8 @@ class WeatherService {
         return _getMockData('Location Denied');
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      // Try to obtain a high-accuracy position by listening to the position stream
+      final position = await _getBestPosition();
 
       String city = 'Unknown Field';
       try {
@@ -53,5 +54,51 @@ class WeatherService {
       'lat': 19.0760,
       'long': 72.8777,
     };
+  }
+
+  Future<Position> _getBestPosition({int timeoutSeconds = 8}) async {
+    try {
+      // If there's a cached last known position, use it as a quick fallback
+      final last = await Geolocator.getLastKnownPosition();
+      final completer = Completer<Position>();
+
+      // If last known is recent and reasonably accurate, return it quickly
+      if (last != null && last.accuracy <= 50) {
+        return last;
+      }
+
+      // Listen to the position stream requesting highest accuracy
+      final stream = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          distanceFilter: 0,
+          timeLimit: Duration(seconds: 1),
+        ),
+      );
+
+      late final StreamSubscription<Position> sub;
+      sub = stream.listen((pos) {
+        // When we get a sufficiently accurate reading, complete
+        if (!completer.isCompleted && pos.accuracy > 0 && pos.accuracy <= 30) {
+          completer.complete(pos);
+          sub.cancel();
+        }
+      }, onError: (err) {
+        if (!completer.isCompleted) {
+          completer.completeError(err);
+        }
+      });
+
+      // Also set a timeout — if nothing accurate arrives, fallback to getCurrentPosition
+      final pos = await completer.future.timeout(Duration(seconds: timeoutSeconds), onTimeout: () async {
+        await sub.cancel();
+        return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      });
+
+      return pos;
+    } catch (_) {
+      // final fallback to getCurrentPosition with best effort
+      return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    }
   }
 }

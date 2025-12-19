@@ -132,7 +132,7 @@ class CropTimelineCard extends StatelessWidget {
                 value: progressValue,
                 minHeight: 10,
                 backgroundColor:
-                    Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
+                    Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   Theme.of(context).colorScheme.primary,
                 ),

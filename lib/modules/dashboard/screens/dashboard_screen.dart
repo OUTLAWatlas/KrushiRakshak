@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/services/database_service.dart';
+import '../../../core/services/tflite_service.dart';
 import '../../../core/services/ledger_service.dart';
 import '../../../core/services/localization_service.dart';
 import '../../../core/services/weather_service.dart';
+import 'package:lottie/lottie.dart';
 import '../../calculator/screens/dosage_calculator_screen.dart';
 import '../../map/screens/pest_map_screen.dart';
 import '../../scanner/screens/pest_scanner_screen.dart';
@@ -32,21 +34,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _confirmHarvest(BuildContext context) async {
+    final loc = context.read<LocalizationService>();
     final shouldReset = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Harvest Crop?"),
-        content: const Text(
-          "This will end the current season and clear all data. \n\nAre you ready to scan a new seed packet?",
-        ),
+        title: Text(loc.translate('harvest_confirm_title')),
+        content: Text(loc.translate('harvest_confirm_content')),
         actions: [
           TextButton(
-            child: const Text("Cancel"),
+            child: Text(loc.translate('cancel')),
             onPressed: () => Navigator.pop(ctx, false),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Yes, Harvest", style: TextStyle(color: Colors.white)),
+            child: Text(loc.translate('yes_harvest'), style: const TextStyle(color: Colors.white)),
             onPressed: () => Navigator.pop(ctx, true),
           ),
         ],
@@ -77,6 +78,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
         });
       }
+      // Notify about missing TFLite model after build so user sees message.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final tflite = context.read<TFLiteService>();
+        final loc = context.read<LocalizationService>();
+        if (!tflite.modelAvailable && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.translate('tflite_missing')),
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      });
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -101,17 +115,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final loc = context.watch<LocalizationService>();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: Text(loc.translate('app_title')),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+          child: Text(loc.translate('app_title'), key: ValueKey(loc.locale)),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
-            tooltip: 'Profile',
+            tooltip: loc.translate('profile'),
             onPressed: () => Navigator.pushNamed(context, '/profile'),
           ),
           IconButton(
             icon: const Icon(Icons.translate),
-            onPressed: () => loc.toggleLanguage(),
+            onPressed: () => loc.toggleToHindi(),
+            tooltip: 'Toggle Language',
           ),
           IconButton(
             icon: const Icon(Icons.restart_alt),
@@ -147,20 +166,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     variety: _variety,
                     stageVegetativeLabel: loc.translate('stage_vegetative'),
                     stageFloweringLabel: loc.translate('stage_flowering'),
-                    stageHarvestLabel: 'Harvest',
+                    stageHarvestLabel: loc.translate('Harvest'),
                   ),
                   const SizedBox(height: 16),
-                  Text('Quick Actions', style: Theme.of(context).textTheme.titleMedium),
+                  Text(loc.translate('quick_actions'), style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: _quickActionCard(loc.translate('scan_pest'), Icons.bug_report, _openScanner)),
+                      Expanded(child: _AnimatedActionCard(title: loc.translate('scan_pest'), icon: Icons.bug_report, onTap: _openScanner)),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _quickActionCard(
-                          loc.translate('dosage_calc'),
-                          Icons.water_drop,
-                          _openDosageCalc,
+                        child: _AnimatedActionCard(
+                          title: loc.translate('dosage_calc'),
+                          icon: Icons.water_drop,
+                          onTap: _openDosageCalc,
                         ),
                       ),
                     ],
@@ -208,65 +227,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on, color: Colors.white70, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            location,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        temp,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        condition,
-                        style: const TextStyle(color: Colors.white70, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            const Icon(Icons.water_drop, color: Colors.lightBlueAccent),
-                            const SizedBox(height: 4),
-                            Text(
-                              humidityVal,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                            const Icon(Icons.location_on, color: Colors.white70, size: 16),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                location,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            Text(
-                              loc.translate('humidity'),
-                              style: const TextStyle(color: Colors.white70, fontSize: 10),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              temp,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                condition,
+                                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Lottie animation column
+                  SizedBox(
+                    width: 100,
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Lottie.network(
+                            'https://assets6.lottiefiles.com/packages/lf20_jtbfg2nb.json',
+                            height: 72,
+                            width: 72,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.water_drop, color: Colors.lightBlueAccent),
+                              const SizedBox(height: 4),
+                              Text(
+                                humidityVal,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                loc.translate('humidity'),
+                                style: const TextStyle(color: Colors.white70, fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -337,10 +386,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return const SizedBox();
     }
 
+    final loc = context.watch<LocalizationService>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Previous Scans', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.translate('previous_scans'), style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         ListView.separated(
           shrinkWrap: true,
@@ -349,7 +400,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final entry = ledger.entries[index];
             return ListTile(
               leading: const CircleAvatar(child: Icon(Icons.bug_report)),
-              title: Text(entry.pestName),
+              title: Text(loc.translate(entry.pestName)),
               subtitle: Text(entry.date.toLocal().toString().split('.').first),
               trailing: Text('${(entry.confidence * 100).toStringAsFixed(0)}%'),
             );
@@ -358,6 +409,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
           itemCount: ledger.entries.length,
         ),
       ],
+    );
+  }
+
+}
+
+class _AnimatedActionCard extends StatefulWidget {
+  const _AnimatedActionCard({required this.title, required this.icon, required this.onTap});
+
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  State<_AnimatedActionCard> createState() => _AnimatedActionCardState();
+}
+
+class _AnimatedActionCardState extends State<_AnimatedActionCard> with SingleTickerProviderStateMixin {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails details) => setState(() => _scale = 0.96);
+  void _onTapUp(TapUpDetails details) => setState(() => _scale = 1.0);
+  void _onTapCancel() => setState(() => _scale = 1.0);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: (d) {
+        _onTapUp(d);
+        widget.onTap();
+      },
+      onTapCancel: _onTapCancel,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 120),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 3,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+            child: Column(
+              children: [
+                Icon(widget.icon, color: Theme.of(context).colorScheme.primary, size: 28),
+                const SizedBox(height: 10),
+                Text(widget.title, textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
