@@ -34,11 +34,11 @@ class TFLiteService {
       bytesList: image.planes.map((p) => p.bytes).toList(),
       imageHeight: image.height,
       imageWidth: image.width,
-      imageMean: 0.0,
-      imageStd: 255.0,
+      imageMean: 127.5,
+      imageStd: 127.5,
       rotation: 0,
       numResults: 1,
-      threshold: 0.0,
+      threshold: 0.6,
     );
 
     if (results == null || results.isEmpty) return null;

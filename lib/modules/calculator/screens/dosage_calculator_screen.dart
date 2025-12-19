@@ -135,10 +135,9 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 TextField(
                   controller: _tankSizeController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    // labelText replaced below with translated value
-                        
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: loc.translate('tank_size_label') ?? 'Tank Size (Liters)',
+                    border: const OutlineInputBorder(),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
