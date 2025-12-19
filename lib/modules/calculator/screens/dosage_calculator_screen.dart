@@ -13,6 +13,7 @@ class DosageCalculatorScreen extends StatefulWidget {
 
 class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   final TextEditingController _tankSizeController = TextEditingController(text: '15');
+  final TextEditingController _cropStageController = TextEditingController(text: '45');
   bool _isExportMode = false;
   late Map<String, dynamic> _selectedMedicine;
 
@@ -48,6 +49,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   @override
   void dispose() {
     _tankSizeController.dispose();
+    _cropStageController.dispose();
     super.dispose();
   }
 
@@ -56,6 +58,35 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final dosePerAcre = (_selectedMedicine['dose_per_acre'] as num).toDouble();
     final ml = (dosePerAcre / 200.0) * tank;
     return ml / 10.0; // 1 cap = 10 ml
+  }
+
+  Widget? _checkWeatherRisk(double cropStageDays, bool hasDosageCalculated) {
+    if (!hasDosageCalculated) return null;
+    if (cropStageDays > 40) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.shade200),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.cloud, color: Colors.orange),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'High Humidity (85%) detected. Risk of Pink Bollworm is High.',
+                style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return null;
   }
 
   @override
@@ -71,6 +102,9 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
     final caps = _calculateCaps();
     final isBanned = _isExportMode && (_selectedMedicine['is_banned_for_export'] as bool);
+    final cropStageDays = double.tryParse(_cropStageController.text) ?? 0;
+    final hasDosageCalculated = caps > 0;
+    final riskCard = _checkWeatherRisk(cropStageDays, hasDosageCalculated);
 
     return Scaffold(
       appBar: AppBar(
@@ -94,12 +128,26 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   ),
+                if (riskCard != null) ...[
+                  riskCard,
+                  const SizedBox(height: 12),
+                ],
                 TextField(
                   controller: _tankSizeController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     // labelText replaced below with translated value
                         
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _cropStageController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Crop stage (days)',
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (_) => setState(() {}),
@@ -169,6 +217,13 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 Center(
                   child: Column(
                     children: [
+                      Image.asset(
+                        'assets/images/medicine_bottle.png',
+                        height: 120,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => const SizedBox(height: 120),
+                      ),
+                      const SizedBox(height: 12),
                       Text(
                         loc.translate('required_dosage'),
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),

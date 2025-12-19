@@ -3,16 +3,30 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class RemoteImage extends StatelessWidget {
-  const RemoteImage.network(this.url, {super.key, this.width, this.height, this.fit = BoxFit.cover});
+  const RemoteImage.network(
+    this.url, {
+    super.key,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+  })  : assetPath = null,
+        isAsset = false;
 
-  const RemoteImage.asset(this.assetPath, {super.key, this.width, this.height, this.fit = BoxFit.contain, this.isAsset = true}) : url = null;
+  const RemoteImage.asset(
+    this.assetPath, {
+    super.key,
+    this.width,
+    this.height,
+    this.fit = BoxFit.contain,
+  })  : url = null,
+        isAsset = true;
 
   final String? url;
   final String? assetPath;
   final double? width;
   final double? height;
   final BoxFit fit;
-  final bool isAsset = false;
+  final bool isAsset;
 
   @override
   Widget build(BuildContext context) {

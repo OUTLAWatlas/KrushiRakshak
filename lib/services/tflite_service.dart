@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:tflite/tflite.dart';
+import '../core/services/dialect_service.dart';
 
 class TFLiteDetection {
   TFLiteDetection({required this.label, required this.confidence});
@@ -15,7 +16,7 @@ class TFLiteService {
   bool _loaded = false;
 
   Future<void> loadModel({
-    String model = 'assets/models/model_unquant.tflite',
+    String model = 'assets/models/model_quantized.tflite',
     String labels = 'assets/models/labels.txt',
   }) async {
     if (_loaded) return;
@@ -44,7 +45,8 @@ class TFLiteService {
     final top = results.first;
     final label = (top['label'] as String?)?.trim() ?? 'Unknown';
     final conf = (top['confidence'] as double?) ?? 0.0;
-    return TFLiteDetection(label: label, confidence: conf);
+    final localizedLabel = DialectService.getLocalizedName(label);
+    return TFLiteDetection(label: localizedLabel, confidence: conf);
   }
 
   Future<void> dispose() async {

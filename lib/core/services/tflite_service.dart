@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'dialect_service.dart';
 
 class Prediction {
   Prediction({required this.label, required this.score});
@@ -14,7 +15,7 @@ class TFLiteService {
   List<String> _labels = const [];
 
   Future<void> loadModel({
-    String modelPath = 'assets/models/model_unquant.tflite',
+    String modelPath = 'assets/models/model_quantized.tflite',
     String labelsPath = 'assets/models/labels.txt',
   }) async {
     // Avoid loading TFLite native libraries on desktop platforms where
@@ -60,7 +61,9 @@ class TFLiteService {
     final results = <Prediction>[];
     for (var i = 0; i < scores.length; i++) {
       results.add(Prediction(
-        label: i < _labels.length ? _labels[i] : 'Label $i',
+        label: DialectService.getLocalizedName(
+          i < _labels.length ? _labels[i] : 'Label $i',
+        ),
         score: scores[i],
       ));
     }
