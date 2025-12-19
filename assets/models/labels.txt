@@ -1,0 +1,15 @@
+0 Corn and Maize Blight 
+1 Corn and Maize Common Rust
+2 Corn and Maize Gray Leaf Spot 
+3 Corn and Maize Healthy 
+4 Soyabean Pest Attack  
+5 Soyabean Frog leaf eye 
+6 Soyabean Spectoria Brown Spot
+7 Soyabean Healthy
+8 Soyabean Rust 
+9 Soyabean Mosaic
+10 cotton bacterial blight 
+11 cotton curl virus 
+12 cotton fussarium wilt 
+13 cotton healthy 
+14 cotton red cotton leaf 

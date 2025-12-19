@@ -148,7 +148,7 @@ class _SeedScanScreenState extends State<SeedScanScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        "💡 We guessed this date based on the ${cropName} season. Tap to change if incorrect.",
+                        "💡 We guessed this date based on the $cropName season. Tap to change if incorrect.",
                         style: TextStyle(fontSize: 11, color: Colors.blue[800], fontStyle: FontStyle.italic),
                       ),
                     ),

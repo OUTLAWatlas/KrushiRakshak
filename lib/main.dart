@@ -7,6 +7,8 @@ import 'core/services/ledger_service.dart';
 import 'core/services/localization_service.dart';
 import 'core/services/ocr_service.dart';
 import 'core/services/tflite_service.dart';
+import 'services/tts_service.dart';
+import 'home_screen.dart';
 import 'modules/dashboard/screens/dashboard_screen.dart';
 import 'modules/onboarding/screens/seed_scan_screen.dart';
 import 'modules/auth/register_screen.dart';
@@ -23,6 +25,7 @@ Future<void> main() async {
   final tflite = TFLiteService();
   await tflite.loadModel();
   final ocr = OCRService();
+  final tts = TtsService();
 
   final userProfile = db.getUserProfile();
   final startRoute = userProfile != null ? '/dashboard' : '/onboarding';
@@ -36,6 +39,7 @@ Future<void> main() async {
         Provider<HiveService>.value(value: hive),
         Provider<TFLiteService>.value(value: tflite),
         Provider<OCRService>.value(value: ocr),
+        Provider<TtsService>.value(value: tts),
       ],
       child: KisaanRakshaApp(initialRoute: startRoute),
     ),
@@ -61,6 +65,7 @@ class KisaanRakshaApp extends StatelessWidget {
         '/dashboard': (_) => const DashboardScreen(),
         '/profile': (_) => const ProfileScreen(),
         '/register': (_) => const RegisterScreen(),
+        '/ai': (_) => const HomeScreen(),
       },
     );
   }

@@ -14,8 +14,8 @@ class TFLiteService {
   List<String> _labels = const [];
 
   Future<void> loadModel({
-    String modelPath = 'assets/models/pest_model.tflite',
-    String labelsPath = 'assets/models/pest_labels.txt',
+    String modelPath = 'assets/models/model_unquant.tflite',
+    String labelsPath = 'assets/models/labels.txt',
   }) async {
     _interpreter = await Interpreter.fromAsset(modelPath);
     _labels = await _loadLabels(labelsPath);

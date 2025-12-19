@@ -6,7 +6,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = MockData.user;
+    const user = MockData.user;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -14,7 +14,7 @@ class ProfileScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _UserCard(user: user),
+          const _UserCard(user: user),
           const SizedBox(height: 16),
           Text('Farm Ledger', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
