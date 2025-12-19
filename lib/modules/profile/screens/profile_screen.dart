@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/mock_data.dart';
+import '../../../core/services/localization_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -7,16 +9,17 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const user = MockData.user;
+    final loc = context.watch<LocalizationService>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(loc.translate('profile')),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const _UserCard(user: user),
           const SizedBox(height: 16),
-          Text('Farm Ledger', style: Theme.of(context).textTheme.titleMedium),
+          Text(loc.translate('farm_ledger'), style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           ...MockData.history.map((item) => _HistoryCard(item: item)).toList(),
           const SizedBox(height: 24),
@@ -25,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pushReplacementNamed(context, '/register');
             },
-            child: const Text('Logout', style: TextStyle(color: Colors.white)),
+            child: Text(loc.translate('logout'), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -40,6 +43,8 @@ class _UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocalizationService>();
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 2,
@@ -57,7 +62,7 @@ class _UserCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(user['phone'] ?? ''),
                   Text(user['location'] ?? ''),
-                  Text('Farm Size: ${user['farmSize'] ?? ''}'),
+                  Text('${loc.translate('farm_size')}: ${user['farmSize'] ?? ''}'),
                 ],
               ),
             ),
@@ -75,13 +80,14 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocalizationService>();
     final color = MockData.severityColor(item['severity'] ?? '');
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: CircleAvatar(backgroundColor: color.withOpacity(0.15), child: Icon(Icons.bug_report, color: color)),
-        title: Text(item['pest'] ?? ''),
+        title: Text(loc.translate(item['pest'] ?? '')),
         subtitle: Text(item['date'] ?? ''),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

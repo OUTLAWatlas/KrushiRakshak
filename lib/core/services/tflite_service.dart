@@ -17,13 +17,34 @@ class TFLiteService {
     String modelPath = 'assets/models/model_unquant.tflite',
     String labelsPath = 'assets/models/labels.txt',
   }) async {
-    _interpreter = await Interpreter.fromAsset(modelPath);
-    _labels = await _loadLabels(labelsPath);
+    // Avoid loading TFLite native libraries on desktop platforms where
+    // the native libtensorflowlite C runtime may not be bundled.
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      // ignore: avoid_print
+      print('Skipping TFLite model load on desktop platform.');
+      _interpreter = null;
+      _labels = const [];
+      return;
+    }
+
+    try {
+      _interpreter = await Interpreter.fromAsset(modelPath);
+      _labels = await _loadLabels(labelsPath);
+    } catch (e) {
+      // If model or labels are missing, log and continue without a model.
+      // The app can still run; analyzeImage will return empty results.
+      // This avoids crashing during development when assets aren't present.
+      // ignore: avoid_print
+      print('TFLite model load failed: $e');
+      _interpreter = null;
+      _labels = const [];
+    }
   }
 
   Future<List<Prediction>> analyzeImage(File file) async {
     if (_interpreter == null) {
-      throw StateError('Interpreter not loaded. Call loadModel first.');
+      // Interpreter not available; return no predictions instead of throwing.
+      return [];
     }
     final bytes = await file.readAsBytes();
     final decoded = img.decodeImage(bytes);
@@ -61,10 +82,14 @@ class TFLiteService {
           w,
           (x) {
             final pixel = resized.getPixel(x, y);
+            // Use the Pixel object's component accessors (r,g,b).
+            final r = pixel.r;
+            final g = pixel.g;
+            final b = pixel.b;
             return [
-              img.getRed(pixel) / 255.0,
-              img.getGreen(pixel) / 255.0,
-              img.getBlue(pixel) / 255.0,
+              r / 255.0,
+              g / 255.0,
+              b / 255.0,
             ];
           },
         ),
@@ -80,4 +105,7 @@ class TFLiteService {
   void dispose() {
     _interpreter?.close();
   }
+
+  /// Whether the TFLite interpreter was successfully loaded.
+  bool get modelAvailable => _interpreter != null;
 }

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/services/localization_service.dart';
 
 class DosageCalculator {
-  static String calculateDosage({
+  static Map<String, dynamic> calculateDosage({
     required double tankSizeLiters,
     required double dosePerAcreMl,
   }) {
     if (tankSizeLiters <= 0 || dosePerAcreMl <= 0) {
-      return 'Enter valid values';
+      return {'ok': false, 'reason': 'enter_valid_values'};
     }
 
     const double waterPerAcreLiters = 200;
     final double requiredMl = (dosePerAcreMl / waterPerAcreLiters) * tankSizeLiters;
     final double caps = requiredMl / 10; // 1 cap = 10 ml
 
-    return 'Add ${requiredMl.toStringAsFixed(1)} ml (approx ${caps.toStringAsFixed(1)} caps)';
+    return {'ok': true, 'ml': requiredMl, 'caps': caps};
   }
 }
 
@@ -45,15 +47,26 @@ class _DosageCardState extends State<DosageCard> {
 
   void _recalculate() {
     final input = double.tryParse(_tankController.text);
+    final loc = Provider.of<LocalizationService>(context, listen: false);
     if (input == null) {
-      setState(() => _resultText = 'Enter a valid number');
+      setState(() => _resultText = loc.translate('enter_valid_number'));
       return;
     }
+
     final result = DosageCalculator.calculateDosage(
       tankSizeLiters: input,
       dosePerAcreMl: widget.dosePerAcreMl,
     );
-    setState(() => _resultText = result);
+
+    if (result['ok'] == true) {
+      final ml = (result['ml'] as double).toStringAsFixed(1);
+      final caps = (result['caps'] as double).toStringAsFixed(1);
+      final tmpl = loc.translate('add_ml_caps');
+      final msg = tmpl.replaceAll('{ml}', ml).replaceAll('{caps}', caps);
+      setState(() => _resultText = msg);
+    } else {
+      setState(() => _resultText = loc.translate(result['reason'] as String));
+    }
   }
 
   @override
@@ -77,14 +90,14 @@ class _DosageCardState extends State<DosageCard> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
-            Text('Target pest: ${widget.pestName}'),
+            Text('${Provider.of<LocalizationService>(context).translate('pest_label')}: ${widget.pestName}'),
             const SizedBox(height: 12),
             TextField(
               controller: _tankController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Tank size (Liters)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: Provider.of<LocalizationService>(context).translate('tank_size'),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/services/database_service.dart';
 import 'core/services/hive_service.dart';
@@ -13,6 +14,8 @@ import 'modules/dashboard/screens/dashboard_screen.dart';
 import 'modules/onboarding/screens/seed_scan_screen.dart';
 import 'modules/auth/register_screen.dart';
 import 'modules/profile/screens/profile_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'widgets/localization_picker.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,8 +30,8 @@ Future<void> main() async {
   final ocr = OCRService();
   final tts = TtsService();
 
-  final userProfile = db.getUserProfile();
-  final startRoute = userProfile != null ? '/dashboard' : '/onboarding';
+  // Always start at dashboard to show home screen on app open
+  final startRoute = '/dashboard';
 
   runApp(
     MultiProvider(
@@ -53,20 +56,31 @@ class KisaanRakshaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'KisaanRaksha',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        useMaterial3: true,
-      ),
-      initialRoute: initialRoute,
-      routes: {
-        '/onboarding': (_) => const SeedScanScreen(),
-        '/dashboard': (_) => const DashboardScreen(),
-        '/profile': (_) => const ProfileScreen(),
-        '/register': (_) => const RegisterScreen(),
-        '/ai': (_) => const HomeScreen(),
-      },
-    );
+    // Use a consumer so Theme/Locale react to language changes
+    return Consumer<LocalizationService>(builder: (context, localeSrv, _) {
+      final theme = AppTheme.build(localeSrv.locale);
+
+      return MaterialApp(
+        title: 'KisaanRaksha',
+        key: ValueKey(localeSrv.locale),
+        theme: theme,
+        locale: Locale(localeSrv.locale),
+        supportedLocales: const [Locale('en'), Locale('mr'), Locale('hi')],
+        // basic Flutter localizations so built-in widgets also adapt
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        initialRoute: initialRoute,
+        routes: {
+          '/onboarding': (_) => const SeedScanScreen(),
+          '/dashboard': (_) => const DashboardScreen(),
+          '/profile': (_) => const ProfileScreen(),
+          '/register': (_) => const RegisterScreen(),
+          '/ai': (_) => const HomeScreen(),
+        },
+      );
+    });
   }
 }
