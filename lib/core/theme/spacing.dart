@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// Centralized spacing tokens for consistent layout rhythm.
 class AppSpacing {

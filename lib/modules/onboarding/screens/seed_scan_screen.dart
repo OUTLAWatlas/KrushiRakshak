@@ -113,7 +113,7 @@ class _SeedScanScreenState extends State<SeedScanScreen> {
                   const Divider(height: 30),
 
                   // The "Smart Date" Section
-                  Text(loc.translate('sowing_date'), style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(loc.translate('sowing_date'), style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 5),
                   InkWell(
                     onTap: () async {

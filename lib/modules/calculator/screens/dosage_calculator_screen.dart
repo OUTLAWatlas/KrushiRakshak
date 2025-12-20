@@ -225,7 +225,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       const SizedBox(height: 12),
                       Text(
                         loc.translate('required_dosage'),
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
                       Text(

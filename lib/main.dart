@@ -31,7 +31,7 @@ Future<void> main() async {
   final tts = TtsService();
 
   // Always start at dashboard to show home screen on app open
-  final startRoute = '/dashboard';
+  const startRoute = '/dashboard';
 
   runApp(
     MultiProvider(

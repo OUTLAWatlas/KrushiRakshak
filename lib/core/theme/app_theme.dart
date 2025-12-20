@@ -12,7 +12,7 @@ class AppColors {
 
 class AppTheme {
   static ThemeData build(String localeTag) {
-    final seed = AppColors.primary;
+    const seed = AppColors.primary;
     final colorScheme = ColorScheme.fromSeed(seedColor: seed);
 
     final base = ThemeData.from(colorScheme: colorScheme, useMaterial3: true);
@@ -21,7 +21,7 @@ class AppTheme {
     return base.copyWith(
       textTheme: base.textTheme,
       primaryColor: AppColors.primary,
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: colorScheme.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
@@ -38,7 +38,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceVariant,
+        fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

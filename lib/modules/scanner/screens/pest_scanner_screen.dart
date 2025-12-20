@@ -235,7 +235,7 @@ class _PestScannerScreenState extends State<PestScannerScreen>
         final label = loc.translate(labelRaw);
         final conf = ((_result?['confidence'] as double?) ?? 0) * 100;
         final solution = _solutions[_result?['label']?.toString() ?? ''] ??
-            loc.translate('solution') + ': ' + loc.translate('unknown');
+            '${loc.translate('solution')}: ${loc.translate('unknown')}';
         final ledger = context.read<LedgerService>();
         return Padding(
           padding: const EdgeInsets.all(16),
