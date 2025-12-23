@@ -1,0 +1,11 @@
+Aphids
+Pink Bollworm
+Thrips
+Whitefly
+Cutworm
+Loopers
+Scale Insects
+Leaf Miner
+Spider Mites
+Beet Armyworm
+Unknown

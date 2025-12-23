@@ -95,6 +95,11 @@ class LocalizationService extends ChangeNotifier {
     'caps': {'en': 'Caps', 'mr': 'कॅप्स', 'hi': 'कैप्स'},
     'banned_for_export': {'en': '{name} is banned for export.', 'mr': '{name} निर्यातीसाठी बंद आहे.', 'hi': '{name} निर्यात के लिए प्रतिबंधित है.'},
     'pest_label': {'en': 'Pest', 'mr': 'कीड', 'hi': 'कीट'},
+    'high_humidity_warning': {
+      'en': 'High Humidity ({humidity}) detected. Risk of {pest} is High.',
+      'mr': 'उच्च आर्द्रता ({humidity}) आढळली. {pest} चा धोका जास्त आहे.',
+      'hi': 'उच्च नमी ({humidity}) का पता चला। {pest} का खतरा अधिक है.'
+    },
     // Map screen
     'pest_radar': {'en': 'Pest Radar', 'mr': 'कीटक राडार', 'hi': 'कीट रेडार'},
     'showing_risks_for': {'en': 'Showing risks for {crop}', 'mr': '{crop} साठी जोखीम दाखवत आहे', 'hi': '{crop} के लिए खतरे दिखा रहा है'},

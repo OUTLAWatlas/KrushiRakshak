@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/localization_service.dart';
+import '../../../core/services/weather_service.dart';
+import '../../../widgets/capsule_indicator.dart';
 
 class DosageCalculatorScreen extends StatefulWidget {
   const DosageCalculatorScreen({super.key, this.initialPest});
@@ -44,6 +46,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   void initState() {
     super.initState();
     _selectedMedicine = _medicines.first;
+    // kick off reading current humidity so UI can reflect weather risks
+    WeatherService().getCurrentWeather().then((m) {
+      setState(() {
+        _currentHumidity = m['humidity']?.toString() ?? '--';
+      });
+    }).catchError((_) {});
   }
 
   @override
@@ -60,9 +68,17 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     return ml / 10.0; // 1 cap = 10 ml
   }
 
-  Widget? _checkWeatherRisk(double cropStageDays, bool hasDosageCalculated) {
+  String _currentHumidity = '--';
+
+  Widget? _checkWeatherRisk(double cropStageDays, bool hasDosageCalculated, LocalizationService loc) {
     if (!hasDosageCalculated) return null;
     if (cropStageDays > 40) {
+      final pestLabel = loc.translate('Pink Bollworm');
+      final template = loc.translate('high_humidity_warning');
+      final warningText = template
+          .replaceAll('{humidity}', _currentHumidity)
+          .replaceAll('{pest}', pestLabel);
+
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
@@ -76,9 +92,9 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           children: [
             const Icon(Icons.cloud, color: Colors.orange),
             const SizedBox(width: 8),
-            Expanded(
+                Expanded(
               child: Text(
-                'High Humidity (85%) detected. Risk of Pink Bollworm is High.',
+                warningText,
                 style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.w600),
               ),
             ),
@@ -104,7 +120,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final isBanned = _isExportMode && (_selectedMedicine['is_banned_for_export'] as bool);
     final cropStageDays = double.tryParse(_cropStageController.text) ?? 0;
     final hasDosageCalculated = caps > 0;
-    final riskCard = _checkWeatherRisk(cropStageDays, hasDosageCalculated);
+    final riskCard = _checkWeatherRisk(cropStageDays, hasDosageCalculated, loc);
 
     return Scaffold(
       appBar: AppBar(
@@ -216,11 +232,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 Center(
                   child: Column(
                     children: [
-                      Image.asset(
-                        'assets/images/medicine_bottle.png',
+                      // Capsule indicator that fills relative to required caps.
+                      CapsuleIndicator(
                         height: 120,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => const SizedBox(height: 120),
+                        width: 56,
+                        percent: (caps / 20.0).clamp(0.0, 1.0),
+                        fillColor: Colors.green.shade600,
                       ),
                       const SizedBox(height: 12),
                       Text(

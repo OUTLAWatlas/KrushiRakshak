@@ -276,18 +276,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     width: 100,
                     child: Column(
                       children: [
+                        // Removed decorative Lottie (man sitting) to keep UI focused
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          height: 72,
+                          width: 72,
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Lottie.network(
-                            'https://assets6.lottiefiles.com/packages/lf20_jtbfg2nb.json',
-                            height: 72,
-                            width: 72,
-                            fit: BoxFit.contain,
-                          ),
+                          child: const Icon(Icons.thermostat, color: Colors.white70, size: 36),
                         ),
                         const SizedBox(height: 6),
                         Container(
