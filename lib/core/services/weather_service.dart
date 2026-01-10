@@ -47,12 +47,14 @@ class WeatherService {
 
   Map<String, dynamic> _getMockData(String errorLocation) {
     return {
-      'location': errorLocation,
+      // Use a Pune farmland fallback so nearby outbreaks align with current region.
+      'location': 'Pune Farmland',
       'temp': '--',
       'humidity': '--',
       'condition': 'Unknown',
-      'lat': 19.0760,
-      'long': 72.8777,
+      // Default to a Pune-area farmland coordinate if GPS fails
+      'lat': 18.5204,
+      'long': 73.8567,
     };
   }
 

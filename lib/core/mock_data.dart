@@ -4,42 +4,12 @@ class MockData {
   static const Map<String, String> user = {
     'name': 'Ramesh Kumar',
     'phone': '+91 98765 43210',
-    'location': 'Nashik, MH',
+    'location': 'Pune, MH',
     'farmSize': '5 Acres',
   };
 
-  static final List<Map<String, String>> history = [
-    {
-      'date': 'Today',
-      'pest': 'Fall Armyworm',
-      'severity': 'High',
-      'status': 'Action Needed',
-    },
-    {
-      'date': 'Yesterday',
-      'pest': 'Aphids',
-      'severity': 'Low',
-      'status': 'Resolved',
-    },
-    {
-      'date': 'Oct 24',
-      'pest': 'Pink Bollworm',
-      'severity': 'Critical',
-      'status': 'Resolved',
-    },
-    {
-      'date': 'Oct 10',
-      'pest': 'Thrips',
-      'severity': 'Medium',
-      'status': 'Monitoring',
-    },
-    {
-      'date': 'Sep 28',
-      'pest': 'Stem Fly',
-      'severity': 'Low',
-      'status': 'Resolved',
-    },
-  ];
+  // History intentionally cleared for demo privacy.
+  static final List<Map<String, String>> history = [];
 
   static Color severityColor(String severity) {
     switch (severity.toLowerCase()) {

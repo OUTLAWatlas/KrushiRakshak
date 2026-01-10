@@ -18,11 +18,13 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const _UserCard(user: user),
-          const SizedBox(height: 16),
-          Text(loc.translate('farm_ledger'), style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ...MockData.history.map((item) => _HistoryCard(item: item)).toList(),
-          const SizedBox(height: 24),
+          if (MockData.history.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(loc.translate('farm_ledger'), style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ...MockData.history.map((item) => _HistoryCard(item: item)).toList(),
+            const SizedBox(height: 24),
+          ],
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {

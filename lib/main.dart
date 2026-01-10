@@ -44,13 +44,13 @@ Future<void> main() async {
         Provider<OCRService>.value(value: ocr),
         Provider<TtsService>.value(value: tts),
       ],
-      child: const KisaanRakshaApp(initialRoute: startRoute),
+      child: const KrushiRakshakApp(initialRoute: startRoute),
     ),
   );
 }
 
-class KisaanRakshaApp extends StatelessWidget {
-  const KisaanRakshaApp({super.key, required this.initialRoute});
+class KrushiRakshakApp extends StatelessWidget {
+  const KrushiRakshakApp({super.key, required this.initialRoute});
 
   final String initialRoute;
 
@@ -61,7 +61,7 @@ class KisaanRakshaApp extends StatelessWidget {
       final theme = AppTheme.build(localeSrv.locale);
 
       return MaterialApp(
-        title: 'KisaanRaksha',
+        title: 'KrushiRakshak',
         key: ValueKey(localeSrv.locale),
         theme: theme,
         locale: Locale(localeSrv.locale),
