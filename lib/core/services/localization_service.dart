@@ -23,9 +23,9 @@ class LocalizationService extends ChangeNotifier {
   // Minimal dictionary with English, Marathi, and Hindi entries
   final Map<String, Map<String, String>> _localizedValues = {
     'app_title': {
-      'en': 'PikVedh',
-      'mr': 'पिकवेध (PikVedh)',
-      'hi': 'पिकवेध (PikVedh)'
+      'en': 'KrushiRakshak',
+      'mr': 'क्रुषीरक्षक (KrushiRakshak)',
+      'hi': 'क्रुषीरक्षक (KrushiRakshak)'
     },
     'scan_pest': {'en': 'Scan Pest', 'mr': 'कीड स्कॅन करा', 'hi': 'कीट स्कैन करें'},
     'dosage_calc': {'en': 'Dosage Calculator', 'mr': 'खत कॅल्क्युलेटर', 'hi': 'खुराक गणक'},
