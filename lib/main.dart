@@ -61,7 +61,7 @@ class KrushiRakshakApp extends StatelessWidget {
       final theme = AppTheme.build(localeSrv.locale);
 
       return MaterialApp(
-        title: 'KrushiRakshak',
+        title: 'Kisaan Raksha',
         key: ValueKey(localeSrv.locale),
         theme: theme,
         locale: Locale(localeSrv.locale),
