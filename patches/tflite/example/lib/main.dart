@@ -9,7 +9,7 @@ import 'package:image/image.dart' as img;
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
 
-void main() => runApp(new App());
+void main() => runApp(App());
 
 const String mobile = "MobileNet";
 const String ssd = "SSD MobileNet";
@@ -18,6 +18,8 @@ const String deeplab = "DeepLab";
 const String posenet = "PoseNet";
 
 class App extends StatelessWidget {
+  const App({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,8 +29,10 @@ class App extends StatelessWidget {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -49,8 +53,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future predictImage(File image) async {
-    if (image == null) return;
-
     switch (_model) {
       case yolo:
         await yolov2Tiny(image);
@@ -69,8 +71,8 @@ class _MyAppState extends State<MyApp> {
       // await recognizeImageBinary(image);
     }
 
-    new FileImage(image)
-        .resolve(new ImageConfiguration())
+    FileImage(image)
+        .resolve(ImageConfiguration())
         .addListener(ImageStreamListener((ImageInfo info, bool _) {
       setState(() {
         _imageHeight = info.image.height.toDouble();
@@ -174,7 +176,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future recognizeImage(File image) async {
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     var recognitions = await Tflite.runModelOnImage(
       path: image.path,
       numResults: 6,
@@ -185,12 +187,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _recognitions = recognitions;
     });
-    int endTime = new DateTime.now().millisecondsSinceEpoch;
+    int endTime = DateTime.now().millisecondsSinceEpoch;
     print("Inference took ${endTime - startTime}ms");
   }
 
   Future recognizeImageBinary(File image) async {
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     var imageBytes = (await rootBundle.load(image.path)).buffer;
     img.Image oriImage = img.decodeJpg(imageBytes.asUint8List());
     img.Image resizedImage = img.copyResize(oriImage, height: 224, width: 224);
@@ -202,12 +204,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _recognitions = recognitions;
     });
-    int endTime = new DateTime.now().millisecondsSinceEpoch;
+    int endTime = DateTime.now().millisecondsSinceEpoch;
     print("Inference took ${endTime - startTime}ms");
   }
 
   Future yolov2Tiny(File image) async {
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     var recognitions = await Tflite.detectObjectOnImage(
       path: image.path,
       model: "YOLO",
@@ -228,12 +230,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _recognitions = recognitions;
     });
-    int endTime = new DateTime.now().millisecondsSinceEpoch;
+    int endTime = DateTime.now().millisecondsSinceEpoch;
     print("Inference took ${endTime - startTime}ms");
   }
 
   Future ssdMobileNet(File image) async {
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     var recognitions = await Tflite.detectObjectOnImage(
       path: image.path,
       numResultsPerClass: 1,
@@ -248,12 +250,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _recognitions = recognitions;
     });
-    int endTime = new DateTime.now().millisecondsSinceEpoch;
+    int endTime = DateTime.now().millisecondsSinceEpoch;
     print("Inference took ${endTime - startTime}ms");
   }
 
   Future segmentMobileNet(File image) async {
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     var recognitions = await Tflite.runSegmentationOnImage(
       path: image.path,
       imageMean: 127.5,
@@ -263,12 +265,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _recognitions = recognitions;
     });
-    int endTime = new DateTime.now().millisecondsSinceEpoch;
+    int endTime = DateTime.now().millisecondsSinceEpoch;
     print("Inference took ${endTime - startTime}");
   }
 
   Future poseNet(File image) async {
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     var recognitions = await Tflite.runPoseNetOnImage(
       path: image.path,
       numResults: 2,
@@ -279,7 +281,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _recognitions = recognitions;
     });
-    int endTime = new DateTime.now().millisecondsSinceEpoch;
+    int endTime = DateTime.now().millisecondsSinceEpoch;
     print("Inference took ${endTime - startTime}ms");
   }
 
@@ -291,21 +293,15 @@ class _MyAppState extends State<MyApp> {
     });
     await loadModel();
 
-    if (_image != null)
-      predictImage(_image);
-    else
-      setState(() {
-        _busy = false;
-      });
+    predictImage(_image);
   }
 
   List<Widget> renderBoxes(Size screen) {
-    if (_recognitions == null) return [];
-    if (_imageHeight == null || _imageWidth == null) return [];
+    if (_imageWidth == null) return [];
 
     double factorX = screen.width;
     double factorY = _imageHeight / _imageWidth * screen.width;
-    Color blue = Color.fromRGBO(37, 213, 253, 1.0);
+    Color blue = const Color.fromRGBO(37, 213, 253, 1.0);
     return _recognitions.map((re) {
       return Positioned(
         left: re["rect"]["x"] * factorX,
@@ -314,7 +310,7 @@ class _MyAppState extends State<MyApp> {
         height: re["rect"]["h"] * factorY,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            borderRadius: const BorderRadius.all(Radius.circular(8.0)),
             border: Border.all(
               color: blue,
               width: 2,
@@ -334,14 +330,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   List<Widget> renderKeypoints(Size screen) {
-    if (_recognitions == null) return [];
-    if (_imageHeight == null || _imageWidth == null) return [];
+    if (_imageWidth == null) return [];
 
     double factorX = screen.width;
     double factorY = _imageHeight / _imageWidth * screen.width;
 
     var lists = <Widget>[];
-    _recognitions.forEach((re) {
+    for (var re in _recognitions) {
       var color = Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0)
           .withOpacity(1.0);
       var list = re["keypoints"].values.map<Widget>((k) {
@@ -360,8 +355,8 @@ class _MyAppState extends State<MyApp> {
         );
       }).toList();
 
-      lists..addAll(list);
-    });
+      lists.addAll(list);
+    }
 
     return lists;
   }
@@ -371,14 +366,12 @@ class _MyAppState extends State<MyApp> {
     Size size = MediaQuery.of(context).size;
     List<Widget> stackChildren = [];
 
-    if (_model == deeplab && _recognitions != null) {
+    if (_model == deeplab) {
       stackChildren.add(Positioned(
         top: 0.0,
         left: 0.0,
         width: size.width,
-        child: _image == null
-            ? Text('No image selected.')
-            : Container(
+        child: Container(
                 decoration: BoxDecoration(
                     image: DecorationImage(
                         alignment: Alignment.topCenter,
@@ -391,15 +384,14 @@ class _MyAppState extends State<MyApp> {
         top: 0.0,
         left: 0.0,
         width: size.width,
-        child: _image == null ? Text('No image selected.') : Image.file(_image),
+        child: Image.file(_image),
       ));
     }
 
     if (_model == mobile) {
       stackChildren.add(Center(
         child: Column(
-          children: _recognitions != null
-              ? _recognitions.map((res) {
+          children: _recognitions.map((res) {
                   return Text(
                     "${res["index"]} - ${res["label"]}: ${res["confidence"].toStringAsFixed(3)}",
                     style: TextStyle(
@@ -408,8 +400,7 @@ class _MyAppState extends State<MyApp> {
                       background: Paint()..color = Colors.white,
                     ),
                   );
-                }).toList()
-              : [],
+                }).toList(),
         ),
       ));
     } else if (_model == ssd || _model == yolo) {
@@ -420,8 +411,8 @@ class _MyAppState extends State<MyApp> {
 
     if (_busy) {
       stackChildren.add(const Opacity(
-        child: ModalBarrier(dismissible: false, color: Colors.grey),
         opacity: 0.3,
+        child: ModalBarrier(dismissible: false, color: Colors.grey),
       ));
       stackChildren.add(const Center(child: CircularProgressIndicator()));
     }
@@ -435,24 +426,24 @@ class _MyAppState extends State<MyApp> {
             itemBuilder: (context) {
               List<PopupMenuEntry<String>> menuEntries = [
                 const PopupMenuItem<String>(
-                  child: Text(mobile),
                   value: mobile,
+                  child: Text(mobile),
                 ),
                 const PopupMenuItem<String>(
-                  child: Text(ssd),
                   value: ssd,
+                  child: Text(ssd),
                 ),
                 const PopupMenuItem<String>(
-                  child: Text(yolo),
                   value: yolo,
+                  child: Text(yolo),
                 ),
                 const PopupMenuItem<String>(
-                  child: Text(deeplab),
                   value: deeplab,
+                  child: Text(deeplab),
                 ),
                 const PopupMenuItem<String>(
-                  child: Text(posenet),
                   value: posenet,
+                  child: Text(posenet),
                 )
               ];
               return menuEntries;
@@ -466,7 +457,7 @@ class _MyAppState extends State<MyApp> {
       floatingActionButton: FloatingActionButton(
         onPressed: predictImagePicker,
         tooltip: 'Pick Image',
-        child: Icon(Icons.image),
+        child: const Icon(Icons.image),
       ),
     );
   }

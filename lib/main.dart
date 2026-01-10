@@ -44,7 +44,7 @@ Future<void> main() async {
         Provider<OCRService>.value(value: ocr),
         Provider<TtsService>.value(value: tts),
       ],
-      child: KisaanRakshaApp(initialRoute: startRoute),
+      child: const KisaanRakshaApp(initialRoute: startRoute),
     ),
   );
 }

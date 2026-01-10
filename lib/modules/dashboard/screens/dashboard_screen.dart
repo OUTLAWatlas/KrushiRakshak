@@ -6,7 +6,6 @@ import '../../../core/services/tflite_service.dart';
 import '../../../core/services/ledger_service.dart';
 import '../../../core/services/localization_service.dart';
 import '../../../core/services/weather_service.dart';
-import 'package:lottie/lottie.dart';
 import '../../calculator/screens/dosage_calculator_screen.dart';
 import '../../map/screens/pest_map_screen.dart';
 import '../../scanner/screens/pest_scanner_screen.dart';
