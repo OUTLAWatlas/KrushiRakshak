@@ -15,7 +15,6 @@ import 'modules/onboarding/screens/seed_scan_screen.dart';
 import 'modules/auth/register_screen.dart';
 import 'modules/profile/screens/profile_screen.dart';
 import 'core/theme/app_theme.dart';
-import 'widgets/localization_picker.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -9,7 +9,7 @@ import 'package:image/image.dart' as img;
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
 
-void main() => runApp(App());
+void main() => runApp(const App());
 
 const String mobile = "MobileNet";
 const String ssd = "SSD MobileNet";
@@ -22,7 +22,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: MyApp(),
     );
   }
@@ -72,7 +72,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     FileImage(image)
-        .resolve(ImageConfiguration())
+        .resolve(const ImageConfiguration())
         .addListener(ImageStreamListener((ImageInfo info, bool _) {
       setState(() {
         _imageHeight = info.image.height.toDouble();
@@ -297,8 +297,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   List<Widget> renderBoxes(Size screen) {
-    if (_imageWidth == null) return [];
-
     double factorX = screen.width;
     double factorY = _imageHeight / _imageWidth * screen.width;
     Color blue = const Color.fromRGBO(37, 213, 253, 1.0);
@@ -330,8 +328,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   List<Widget> renderKeypoints(Size screen) {
-    if (_imageWidth == null) return [];
-
     double factorX = screen.width;
     double factorY = _imageHeight / _imageWidth * screen.width;
 
